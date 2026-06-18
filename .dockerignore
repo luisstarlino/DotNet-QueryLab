@@ -1,0 +1,10 @@
+**/.vs
+**/.git
+**/.gitignore
+**/bin
+**/obj
+**/*.user
+**/*.md
+**/TestResults
+openspec
+tests

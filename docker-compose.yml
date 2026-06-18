@@ -1,0 +1,46 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: querylab
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d querylab"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: src/QueryLab.Api/Dockerfile
+    ports:
+      - "5000:8080"
+    environment:
+      - DATABASE_URL=Host=db;Database=querylab;Username=postgres;Password=postgres
+      - ConnectionStrings__DefaultConnection=Host=db;Database=querylab;Username=postgres;Password=postgres
+      - ASPNETCORE_ENVIRONMENT=Production
+    depends_on:
+      db:
+        condition: service_healthy
+
+  seed:
+    build:
+      context: .
+      dockerfile: src/QueryLab.Api/Dockerfile
+    command: ["dotnet", "QueryLab.Api.dll", "--seed"]
+    environment:
+      - DATABASE_URL=Host=db;Database=querylab;Username=postgres;Password=postgres
+      - ConnectionStrings__DefaultConnection=Host=db;Database=querylab;Username=postgres;Password=postgres
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+volumes:
+  postgres_data:
