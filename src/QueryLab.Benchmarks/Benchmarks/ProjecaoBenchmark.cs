@@ -13,8 +13,7 @@ public class ProjecaoBenchmark
     [GlobalSetup]
     public void Setup()
     {
-        var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL")
-            ?? "Host=localhost;Database=querylab;Username=postgres;Password=postgres";
+        var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL") ?? "Host=localhost;Database=querylab;Username=postgres;Password=postgres";
 
         var options = new DbContextOptionsBuilder<QueryLabDbContext>()
             .UseNpgsql(connectionString)
