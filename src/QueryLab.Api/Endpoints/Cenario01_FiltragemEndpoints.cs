@@ -34,7 +34,7 @@ public static class Cenario01FiltragemEndpoints
         });
 
         // IEnumerable: AsEnumerable() materializa tudo antes do WHERE — 1M rows trafegam
-        group.MapGet("/ienumerable", () => async (IDbContextFactory<QueryLabDbContext> factory) =>
+        group.MapGet("/ienumerable", async (IDbContextFactory<QueryLabDbContext> factory) =>
         {
             // --- 1.: Context
             var ctx = QueryMetricsContext.Current!;
@@ -44,13 +44,14 @@ public static class Cenario01FiltragemEndpoints
             var umMesAtras = DateTime.UtcNow.AddMonths(-1);
 
             // --- PROJETA TUDO PRIMEIRO
+            var todos = db.Pedidos.AsEnumerable();
+            ctx.RegistrosTrafegados = todos.Count();
+
             var dados = db.Pedidos
             .Where(p => p.ValorTotal > 500 && p.DataPedido >= umMesAtras)
-            .AsEnumerable()
             .ToList();
 
-            ctx.RegistrosTrafegados = dados.Count;
-            var metrics = ctx.End("Cenário 02 — Filtragem", "IEnumerable", dados.Count);
+            var metrics = ctx.End("Cenário 01 — Filtragem", "IEnumerable", dados.Count);
 
             return Results.Ok(new QueryResult<int>(dados.Count, metrics));
         });

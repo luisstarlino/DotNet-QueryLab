@@ -7,5 +7,6 @@ public record QueryMetrics(
     long TempoMs,
     int RegistrosTrafegados,
     int RegistrosRetornados,
-    long MemoriaAlocadaBytes
+    long MemoriaAlocadaBytes,
+    double MemoriaAlocadaMegaBytes
 );

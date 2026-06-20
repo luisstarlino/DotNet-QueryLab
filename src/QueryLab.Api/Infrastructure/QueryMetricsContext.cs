@@ -34,6 +34,7 @@ public sealed class QueryMetricsContext
         _stopwatch.Stop();
         var memAfter = GC.GetTotalMemory(false);
         _current.Value = null;
+        var bytes = Math.Max(0, memAfter - _memoryBefore);
 
         return new QueryMetrics(
             cenario,
@@ -42,7 +43,8 @@ public sealed class QueryMetricsContext
             _stopwatch.ElapsedMilliseconds,
             RegistrosTrafegados,
             registrosRetornados,
-            Math.Max(0, memAfter - _memoryBefore)
+            bytes,
+            bytes / 1024.0 / 1024.0
         );
     }
 
