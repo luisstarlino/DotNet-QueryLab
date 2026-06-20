@@ -13,5 +13,12 @@ RUN dotnet publish -c Release -o /app/publish --no-restore
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 EXPOSE 8080
+
+# Npgsql tenta carregar a lib GSSAPI/Kerberos no startup; a imagem aspnet mínima
+# não a inclui. Sem ela aparece o aviso "libgssapi_krb5.so.2: cannot open shared
+# object file". Não é fatal com auth por senha, mas instalar elimina o ruído.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libgssapi-krb5-2 \
+    && rm -rf /var/lib/apt/lists/*
 COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "QueryLab.Api.dll"]

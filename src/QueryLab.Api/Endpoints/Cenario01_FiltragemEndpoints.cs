@@ -19,7 +19,8 @@ public static class Cenario01FiltragemEndpoints
             var ctx = QueryMetricsContext.Current!;
             await using var db = await factory.CreateDbContextAsync();
 
-            var umMesAtras = DateTime.Now.AddMonths(-1);
+            // DataPedido é timestamptz no Postgres; Npgsql exige DateTime UTC como parâmetro
+            var umMesAtras = DateTime.UtcNow.AddMonths(-1);
 
             // --- WHERE DENTRO do SQL: só vai trafegar as rows filtradas
             var dados = await db.Pedidos

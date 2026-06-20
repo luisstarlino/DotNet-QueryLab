@@ -39,11 +39,10 @@ try
 
     app.UseMiddleware<DiagnosticMiddleware>();
 
-    // Aplica migrations com retry para aguardar o PostgreSQL subir no Docker
-    if (!args.Contains("--seed"))
-    {
-        await ApplyMigrationsWithRetryAsync(app.Services, app.Logger);
-    }
+    // Aplica migrations com retry para aguardar o PostgreSQL subir no Docker.
+    // Roda em ambos os modos (api e seed) para garantir que as tabelas existam
+    // mesmo quando o serviço de seed é executado isoladamente.
+    await ApplyMigrationsWithRetryAsync(app.Services, app.Logger);
 
     // Modo seed: popula o banco e encerra
     if (args.Contains("--seed"))
