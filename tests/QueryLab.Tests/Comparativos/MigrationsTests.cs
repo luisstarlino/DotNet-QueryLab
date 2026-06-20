@@ -21,7 +21,8 @@ public sealed class MigrationsTests : IClassFixture<DatabaseFixture>
         foreach (var table in expectedTables)
         {
             await using var cmd = conn.CreateCommand();
-            cmd.CommandText = $"SELECT to_regclass('public.\"{table}\"')";
+            // ::text porque o Npgsql não materializa o tipo nativo 'regclass' como Object
+            cmd.CommandText = $"SELECT to_regclass('public.\"{table}\"')::text";
             var result = await cmd.ExecuteScalarAsync();
             Assert.NotEqual(DBNull.Value, result);
             Assert.NotNull(result);
