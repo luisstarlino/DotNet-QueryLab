@@ -34,7 +34,26 @@ public static class Cenario01FiltragemEndpoints
         });
 
         // IEnumerable: AsEnumerable() materializa tudo antes do WHERE — 1M rows trafegam
-        group.MapGet("/ienumerable", () => Results.Ok("not implemented"));
+        group.MapGet("/ienumerable", () => async (IDbContextFactory<QueryLabDbContext> factory) =>
+        {
+            // --- 1.: Context
+            var ctx = QueryMetricsContext.Current!;
+            await using var db = await factory.CreateDbContextAsync();
+
+            // DataPedido é timestamptz no Postgres; Npgsql exige DateTime UTC como parâmetro
+            var umMesAtras = DateTime.UtcNow.AddMonths(-1);
+
+            // --- PROJETA TUDO PRIMEIRO
+            var dados = db.Pedidos
+            .Where(p => p.ValorTotal > 500 && p.DataPedido >= umMesAtras)
+            .AsEnumerable()
+            .ToList();
+
+            ctx.RegistrosTrafegados = dados.Count;
+            var metrics = ctx.End("Cenário 02 — Filtragem", "IEnumerable", dados.Count);
+
+            return Results.Ok(new QueryResult<int>(dados.Count, metrics));
+        });
 
         return app;
     }
