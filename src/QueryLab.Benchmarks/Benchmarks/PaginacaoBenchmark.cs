@@ -15,13 +15,8 @@ public class PaginacaoBenchmark
     [GlobalSetup]
     public void Setup()
     {
-        var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL")
-            ?? "Host=localhost;Database=querylab;Username=postgres;Password=postgres";
-
-        var options = new DbContextOptionsBuilder<QueryLabDbContext>()
-            .UseNpgsql(connectionString)
-            .Options;
-
+        var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL") ?? "Host=localhost;Database=querylab;Username=postgres;Password=postgres";
+        var options = new DbContextOptionsBuilder<QueryLabDbContext>().UseNpgsql(connectionString).Options;
         _db = new QueryLabDbContext(options);
     }
 
