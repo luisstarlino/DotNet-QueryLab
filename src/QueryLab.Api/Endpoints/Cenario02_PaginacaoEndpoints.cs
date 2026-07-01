@@ -1,6 +1,8 @@
 // Cenário 2: demonstra a diferença entre paginar no banco (OFFSET/FETCH no SQL)
 // versus paginar na memória (Skip/Take em C# após materializar tudo)
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using QueryLab.Api.Infrastructure;
 using QueryLab.Infra;
 
@@ -32,7 +34,22 @@ public static class Cenario02PaginacaoEndpoints
         });
 
         // IEnumerable: ordena e pagina na memória após materializar tudo
-        group.MapGet("/ienumerable", (int page = 1, int size = 20) => Results.Ok("not implemented"));
+        group.MapGet("/ienumerable", async (IDbContextFactory < QueryLabDbContext > factory, int page = 1, int size = 20) =>
+        {
+            // --- 1.: Context
+            var ctx = QueryMetricsContext.Current!;
+            await using var db = await factory.CreateDbContextAsync();
+
+            // --- 2: Memory Projection
+            var results = db.Pedidos.OrderBy(p => p.DataPedido).AsEnumerable().Skip((page - 1) * size).Take(size).ToList();
+
+            ctx.RegistrosTrafegados = results.Count;
+
+            var metrics = ctx.End("Cenáraio 02 - Paginação na Memória da aplicação", "IEnumerable", results.Count);
+
+            return Results.Ok(new QueryResult<int>(results.Count, metrics));
+
+        });
 
         return app;
     }
